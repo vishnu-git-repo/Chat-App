@@ -1,7 +1,7 @@
 import React from "react"
 import { useAuthStore } from "../store/useAuthStore";
 import { useMessageStore } from "../store/useMessageStore";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/SideBar";
 import EmptyMessage from "../components/EmptyMessage";
 import MessageContainer from "../components/MessageContainer";
 
