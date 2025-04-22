@@ -5,13 +5,45 @@ import { getReceiverSocketId, io } from "../lib/socket.js";
 
 
 
-export const getUsersForSidebar = async (req,res) => {
+export const getAllUsers = async (req,res) => {
     try{
         const currentUserId = req.user._id;
-        const filteredUsers = await User.find().select("-password");
-        res.status(200).json(filteredUsers)
+        const filteredUsers = await User.find( { _id : { $ne : currentUserId }}).select("-password");
+        res.status(200).json(filteredUsers);
     }catch(error){
         console.log("Error in getUsersForSidebar :\n",error.message);
+        res.status(500).json({error :"Internal server error"});
+    }
+}
+
+export const getRecentUsers = async (req,res) => {
+    try{
+        const currentUserId = req.user._id;
+        const filteredUsers = await User.find( { _id : currentUserId })
+            .select("recentUsers")
+            .populate("recentUsers","-password");
+        res.status(200).json(filteredUsers[0].recentUsers);
+    } catch (error) {
+        console.log("Error in getRecentUsers :\n",error.message);
+        res.status(500).json({error :"Internal server error"});
+    }
+}
+
+export const setRecentUsers = async (req,res) => {
+    try{
+        const currentUserId = req.user._id;
+        const { recentUsers } = req.body; 
+        console.log(recentUsers);
+        console.log(typeof(recentUsers));
+
+        const users = await User.findByIdAndUpdate(
+            currentUserId, 
+            {recentUsers: recentUsers}
+        );
+        // console.log(users);
+        res.status(200).json(users);
+    } catch (error) {
+        console.log("Error in setRecentUsers :\n",error.message);
         res.status(500).json({error :"Internal server error"});
     }
 }

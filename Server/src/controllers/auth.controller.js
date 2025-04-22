@@ -25,15 +25,14 @@ export const signup = async (req, res) => {
         if(newUser){
             generateToken(newUser._id,res);
             await newUser.save();
-            res.status(201).json({
-                message : "success",
-                user : {
+            res.status(200).json(
+                {
                     _id : newUser._id,
                     name : newUser.name,
                     email : newUser.email,
                     profilePic : newUser.profilePic,
                 }
-            });
+            );
         }
         else{
             return res.status(400).json({message : "Invalid User Credentials"});

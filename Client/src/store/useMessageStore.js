@@ -6,7 +6,7 @@ import { useAuthStore } from "./useAuthStore";
 
 export const useMessageStore = create( (set, get) =>  ({
     messages: [],
-    users: localStorage.getItem("users")? JSON.parse(localStorage.getItem("users")) : [],
+    users: [],
     selectedUser: null,
     isUserLoading: false,
     isMessageLoading: false,
@@ -16,12 +16,28 @@ export const useMessageStore = create( (set, get) =>  ({
         const {users, appendNewUsersToLast} = get();
         set({isUserLoading: true});
         try {
-            const res = await axiosInstance.get("/message/getuser");
-            if (users.length === 0) {
-                set({users: res.data});
-                localStorage.setItem("users", JSON.stringify(res.data));
-            }
-            else appendNewUsersToLast(res.data);
+            const allUsersRes = await axiosInstance.get("/message/getUsers");
+            const recentUsersRes = await axiosInstance.get("/message/getRecentUsers");
+            const oldUsers = recentUsersRes.data.filter( user => allUsersRes.data.includes(user));
+            const newUsers = allUsersRes.data.filter( user => !oldUsers.includes(user));    
+            set({users: oldUsers.concat(newUsers)});
+        } catch (error) {
+            toast.error(error.response.data.message);
+        }finally{
+            set({isUserLoading: false});
+        }
+    },
+
+    sendRecentUsers: async() => {
+        const { users } = get();
+        set({isUserLoading: true});
+        try {
+            const userIds = [];
+            users.forEach(user => {
+                userIds.push(user._id);
+            });
+            const res = await axiosInstance.post("/message/setRecentUsers", {recentUsers: userIds});
+            console.log(res.data);
         } catch (error) {
             toast.error(error.response.data.message);
         }finally{
@@ -80,7 +96,7 @@ export const useMessageStore = create( (set, get) =>  ({
     },
 
     swapUserToFirstById: async(userId) => {
-        const { users } = get();
+        const { users, sendRecentUsers } = get();
         set({isUserLoading: true});
         const swappedUsers = [];
         for (let user of await users) {
@@ -90,24 +106,9 @@ export const useMessageStore = create( (set, get) =>  ({
                 swappedUsers.push(user);
             }
         }
-        localStorage.setItem("users", JSON.stringify(swappedUsers));
         set({ users: swappedUsers});
         set({isUserLoading: false});
-    },
-
-    appendNewUsersToLast: async(newUsers)=>{
-        const {users} = get();
-        set({isUserLoading: true});
-        if(users.length !== newUsers.length){
-            
-            const temp = newUsers.filter( (newUser) => !users.some(existingUser => (existingUser._id === newUser._id) && (existingUser._id !== authUser._id) ));
-            for( let user of temp){
-                users.push(user);
-            }
-            localStorage.setItem("users",JSON.stringify(users));
-            set({users : users});
-        }
-        set({isUserLoading: false});
+        sendRecentUsers();
     },
 
     setSelectedUser: (selectedUser) => set({ selectedUser }),

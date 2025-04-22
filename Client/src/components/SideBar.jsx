@@ -4,20 +4,19 @@ import { useAuthStore } from "../store/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { Users } from "lucide-react";
 
-const Sidebar = () => {
+const SideBar = () => {
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useMessageStore();
- 
   const { onlineUsers,authUser } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
   useEffect(() => {
     getUsers();
     console.log(authUser.email);
-  }, [getUsers,isUsersLoading]);
+  }, [getUsers,isUsersLoading,authUser]);
 
   const filteredUsers = showOnlineOnly
     ? users.filter((user) => onlineUsers.includes(user._id))
-    : users;
+    : users ;
 
   if (isUsersLoading) return <SidebarSkeleton />;
 
@@ -86,4 +85,4 @@ const Sidebar = () => {
     </aside>
   );
 };
-export default Sidebar;
+export default SideBar;

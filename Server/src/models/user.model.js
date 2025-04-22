@@ -18,8 +18,14 @@ const Schema = new mongoose.Schema(
         profilePic : {
             type : String,
             // default : "https://iconarchive.com/download/i108230/Flat-Icons/User-Profile-2.ico",
-            default :""
-        }
+            default :"",
+        },
+        recentUsers :[
+            {
+                type : mongoose.Schema.Types.ObjectId,
+                ref : "User",
+            }
+        ]
     },
     { 
         timestamps : true 
