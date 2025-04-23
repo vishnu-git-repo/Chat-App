@@ -28,20 +28,16 @@ export const useMessageStore = create( (set, get) =>  ({
         }
     },
 
-    sendRecentUsers: async() => {
-        const { users } = get();
-        set({isUserLoading: true});
+    sendRecentUsers: async(_users) => {
         try {
             const userIds = [];
-            users.forEach(user => {
+            _users.forEach(user => {
                 userIds.push(user._id);
             });
             const res = await axiosInstance.post("/message/setRecentUsers", {recentUsers: userIds});
             console.log(res.data);
         } catch (error) {
             toast.error(error.response.data.message);
-        }finally{
-            set({isUserLoading: false});
         }
     },
 
@@ -105,7 +101,7 @@ export const useMessageStore = create( (set, get) =>  ({
         }
         set({ users: swappedUsers});
         set({isUserLoading: false});
-        sendRecentUsers();
+        sendRecentUsers(swappedUsers);
     },
 
     setSelectedUser: (selectedUser) => set({ selectedUser }),
