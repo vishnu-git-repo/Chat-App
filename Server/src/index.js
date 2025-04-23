@@ -11,10 +11,6 @@ import messageRouter from "./routes/message.route.js";
 import { app, server} from "./lib/socket.js";
 
 
-
-
-
-
 app.use(cookieParser());
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
