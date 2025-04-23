@@ -13,14 +13,14 @@ export const useMessageStore = create( (set, get) =>  ({
 
 
     getUsers: async() => {
-        const {users, appendNewUsersToLast} = get();
         set({isUserLoading: true});
         try {
             const allUsersRes = await axiosInstance.get("/message/getUsers");
             const recentUsersRes = await axiosInstance.get("/message/getRecentUsers");
-            const oldUsers = recentUsersRes.data.filter( user => allUsersRes.data.includes(user));
-            const newUsers = allUsersRes.data.filter( user => !oldUsers.includes(user));    
-            set({users: oldUsers.concat(newUsers)});
+            const oldUsers = recentUsersRes.data.filter( user => !allUsersRes.data.includes(user));
+            const newUsers = allUsersRes.data.filter( user => oldUsers.includes(user)); 
+            set({ users: oldUsers.concat(newUsers)});   
+            console.log("Get Users",get().users);
         } catch (error) {
             toast.error(error.response.data.message);
         }finally{
@@ -29,15 +29,18 @@ export const useMessageStore = create( (set, get) =>  ({
     },
 
     sendRecentUsers: async(_users) => {
+        set({isUserLoading: true});
         try {
             const userIds = [];
             _users.forEach(user => {
                 userIds.push(user._id);
             });
             const res = await axiosInstance.post("/message/setRecentUsers", {recentUsers: userIds});
-            console.log(res.data);
+            console.log("sendRecentUsers", res.data);
         } catch (error) {
             toast.error(error.response.data.message);
+        } finally {
+            set({ isUserLoading: false});
         }
     },
 
