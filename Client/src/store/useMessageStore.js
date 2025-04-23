@@ -79,14 +79,11 @@ export const useMessageStore = create( (set, get) =>  ({
         socket.on("newMessage", (newMessage) => {
           const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
           if (!isMessageSentFromSelectedUser) {
-            swapUserToFirstById(newMessage.senderId)
-            return;
+            swapUserToFirstById(newMessage.senderId);
+          }else {
+            set({messages: [...get().messages, newMessage],});
+              swapUserToFirstById(newMessage.senderId);
           }
-    
-          set({
-            messages: [...get().messages, newMessage],
-          });
-          swapUserToFirstById(newMessage.senderId);
         });
     },
     
