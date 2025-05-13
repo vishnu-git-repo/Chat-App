@@ -18,8 +18,9 @@ export const useMessageStore = create( (set, get) =>  ({
             const allUsersRes = await axiosInstance.get("/message/getUsers");
             const recentUsersRes = await axiosInstance.get("/message/getRecentUsers");
             const oldUsers = recentUsersRes.data.filter( user => !allUsersRes.data.includes(user));
-            const newUsers = allUsersRes.data.filter( user => oldUsers.includes(user)); 
-            set({ users: oldUsers.concat(newUsers)});   
+            const newUsers = allUsersRes.data.filter( user => !oldUsers.includes(user)); 
+            const setUsers = oldUsers.concat(newUsers);
+            set({ users: setUsers});   
             console.log("Get Users",get().users);
         } catch (error) {
             toast.error(error.response.data.message);

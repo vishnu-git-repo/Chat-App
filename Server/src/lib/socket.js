@@ -16,19 +16,22 @@ const io = new Server(server, {
 const userSocketMap = {};
 
 export const getReceiverSocketId = (userId) => {
-    return userSocketMap[userId];
+    return userSocketMap[userId].socketId;
 }
   
 io.on("connection", (socket) => {
     const {userId, email} = socket.handshake.query;
-    if (userId) userSocketMap[userId] = socket.id;
-    if(email) {console.log("Connected => ", socket.id, " : ",email);console.log("onlineUsers:\n", Object.keys(userSocketMap));}
+    if (userId) userSocketMap[userId] = {socketId : socket.id, email};
+    if(email) {
+        console.log("connected => ",email);
+        // console.log("onlineUsers:\n", Object.values(userSocketMap).map(user => user.email).join(", "));
+    }
 
     // io.emit() is used to send events to all the connected clients
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   
     socket.on("disconnect", () => {
-      if(email) console.log("Disconnected => ", socket.id, " : ", email);
+      if(email) console.log("Disconnected => ", email);
       delete userSocketMap[userId];
       io.emit("getOnlineUsers", Object.keys(userSocketMap));
     });
