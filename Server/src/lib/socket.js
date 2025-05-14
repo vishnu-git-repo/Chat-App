@@ -24,7 +24,6 @@ io.on("connection", (socket) => {
     if (userId) userSocketMap[userId] = {socketId : socket.id, email};
     if(email) {
         console.log("connected => ",email);
-        // console.log("onlineUsers:\n", Object.values(userSocketMap).map(user => user.email).join(", "));
     }
 
     // io.emit() is used to send events to all the connected clients

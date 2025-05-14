@@ -12,25 +12,33 @@ export const useMessageStore = create( (set, get) =>  ({
     isMessageLoading: false,
 
 
-    getUsers: async() => {
-        set({isUserLoading: true});
+    getUsers: async () => {
+        set({ isUserLoading: true });
+
         try {
             const allUsersRes = await axiosInstance.get("/message/getUsers");
             const recentUsersRes = await axiosInstance.get("/message/getRecentUsers");
-            const oldUsers = recentUsersRes.data.filter( user => !allUsersRes.data.includes(user));
-            const newUsers = allUsersRes.data.filter( user => !oldUsers.includes(user)); 
-            const setUsers = oldUsers.concat(newUsers);
-            set({ users: setUsers});   
-            console.log("Get Users",get().users);
+
+            const recentUserIds = recentUsersRes.data.map(user => user._id);
+
+            const recentUsers = recentUserIds
+                .map(userId => allUsersRes.data.find(user => user._id === userId))
+                .filter(Boolean);
+
+            const newUsers = allUsersRes.data.filter(user => !recentUserIds.includes(user._id));
+
+            const setUsers = [...recentUsers, ...newUsers];
+
+            set({ users: setUsers });
+
         } catch (error) {
             toast.error(error.response.data.message);
-        }finally{
-            set({isUserLoading: false});
+        } finally {
+            set({ isUserLoading: false });
         }
-    },
+    },    
 
     sendRecentUsers: async(_users) => {
-        set({isUserLoading: true});
         try {
             const userIds = [];
             _users.forEach(user => {
@@ -40,8 +48,6 @@ export const useMessageStore = create( (set, get) =>  ({
             console.log("sendRecentUsers", res.data);
         } catch (error) {
             toast.error(error.response.data.message);
-        } finally {
-            set({ isUserLoading: false});
         }
     },
 
@@ -72,17 +78,14 @@ export const useMessageStore = create( (set, get) =>  ({
 
     subscribeToMessages: () => {
         const { selectedUser,swapUserToFirstById} = get();
-        if (!selectedUser) return;
     
         const socket = useAuthStore.getState().socket;
-    
+
         socket.on("newMessage", (newMessage) => {
+          swapUserToFirstById(newMessage.senderId);
           const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
-          if (!isMessageSentFromSelectedUser) {
-            swapUserToFirstById(newMessage.senderId);
-          }else {
+          if (isMessageSentFromSelectedUser) {
             set({messages: [...get().messages, newMessage],});
-              swapUserToFirstById(newMessage.senderId);
           }
         });
     },
